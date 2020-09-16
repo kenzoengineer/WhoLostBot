@@ -4,28 +4,26 @@ fs = require("fs");
 
 const client = new Discord.Client();
 
-const vc = "642963122860326914";
-const tc = "196070842029834251";
+const vc = "595102402168750085";
+const tc = "595102402168750083";
 
 //server
-const server = client.guilds.get("196070842029834251");
-//vc
-//var channel = client.channels.get(vc);
+const server = client.guilds.get("595102402168750081");
+
 var searching = "false";
 var onOff = "on";
 
 
-
 client.on("ready", () => {
-	console.log(`Logged in as ${client.user.tag}!`);
+	console.log("Logged in as " + client.user.tag);
 	client.user.setActivity("kotori best waifu");
 });
 
 client.on("message", (msg) => {
 	//vc
-	var channel = client.channels.get(vc);
+	const channel = client.channels.get(vc);
 	//tc
-	var txtChannel = client.channels.get(tc);
+	const txtChannel = client.channels.get(tc);
 	if (msg.content === ",join") {
 		msg.delete();
 		channel.join();
@@ -50,7 +48,15 @@ client.on("message", (msg) => {
 	}
 	if (msg.content === ",status") {
 		msg.delete();
-		msg.channel.send(onOff);
+		const embed = {
+			"title": "The bot is currently `" + onOff.toUpperCase() + "`",
+			"color": 6593371
+		};
+		msg.channel.send({
+			embed
+		}).then(msg => {
+			msg.delete(5000)
+		});
 	}
 	if (msg.content === ",off") {
 		msg.delete();
@@ -105,7 +111,7 @@ client.on("message", (msg) => {
 });
 
 function containsBot() {
-	var channel = client.channels.get(vc);
+	const channel = client.channels.get(vc);
 	var hasBot = false;
 	for ([snowflake, guildMember] of channel.members) {
 		console.log("is " + snowflake + " a bot? " + guildMember.user.bot);
@@ -119,7 +125,7 @@ function containsBot() {
 
 //checks if that user is a bot or not
 function isBot() {
-	var channel = client.channels.get(vc);
+	const channel = client.channels.get(vc);
 	for ([snowflake, guildMember] of channel.members) {
 		if (guildMember.user.bot == false) {
 			return guildMember;
@@ -134,39 +140,34 @@ function writeF(a) {
 	})
 }
 
+function printLoser(person, channel, txtChannel) {
+	const embed = {
+		"title": "Uh oh! " + person.user.username + " lost. How sad...",
+		"color": 6593371
+	};
+	writeF(person.id);
+	txtChannel.send("<@" + person.id + ">", {
+		embed
+	});
+	searching = "false";
+	client.user.setActivity("kotori best waifu");
+}
+
 client.on("voiceStateUpdate", (oldMember, newMember) => {
 	//vc
-	var channel = client.channels.get(vc);
+	const channel = client.channels.get(vc);
 	//tc
-	var txtChannel = client.channels.get(tc);
+	const txtChannel = client.channels.get(tc);
 	//if someone loses
 	if (channel.members.size === 1 && searching === "true" && onOff === "on") {
-		const embed = {
-			"title": "Uh oh! " + channel.members.first().user.username + " lost. How sad...",
-			"color": 6593371
-		};
-		writeF(channel.members.first().id);
-		txtChannel.send("<@" + channel.members.first().id + ">", {
-			embed
-		});
-		searching = "false";
-		client.user.setActivity("kotori best waifu");
+		printLoser(channel.members.first(), channel, txtChannel);
 		//IF THE LAST GUY IS A BOT
 	} else if (channel.members.size === 2 && searching === "true" && onOff === "on" && containsBot() == true) {
 		console.log("members are now two");
 		var possibleLoser = isBot();
-		const embed = {
-			"title": "Uh oh! " + possibleLoser.user.username + " lost. How sad...",
-			"color": 6593371
-		};
-		writeF(channel.members.first().id);
-		txtChannel.send("<@" + possibleLoser.id + ">", {
-			embed
-		});
-		searching = "false";
-		client.user.setActivity("kotori best waifu");
+		printLoser(possibleLoser, channel, txtChannel);
 	}
-	//init bot
+	//initialize bot
 	if (channel.members.size > 2 && searching == "false" && onOff === "on") {
 		searching = "true";
 		const embed = {
